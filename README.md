@@ -30,13 +30,13 @@ Use `--code`, `--player`, and `--token` to drive a human seat you own. The sampl
 
 The public host's browser workflow has been verified. In this environment, Python's standard-library HTTP client received HTTP 403 with Cloudflare error 1010 from the public host; that client stops and reports the response. Compatibility with other external clients is unverified. No user-agent changes or access-control bypass are included.
 
-## Rules and implementation
+## Rules
 
-- The 5×5 island has seeded symmetric grass and reefs, protected corner homes and five shrines.
-- Each turn restores one energy; grow spends tile cost, fortify spends one, raid spends two plus target fortification. Rest restores two extra energy. Energy caps at eight.
-- Growth and attacks need a connection to home. A raid needs more adjacent connected friendly tiles than defending neighbors plus fortification. Homes cannot be captured.
-- Owned tiles score terrain value; each shrine adds two points. Most points after eight rounds wins; tied players share victory.
-- `engine.mjs` is deterministic and immutable. `api.mjs` stores private game envelopes in D1 using compare-and-swap. Games expire after seven days; capacity and request sizes are bounded.
+Two to four players each take eight turns on a seeded, symmetric 5×5 board with protected corner homes and five shrines. Start each turn with one extra energy, capped at eight, then take one action: **Grow** into neutral land adjacent to territory connected to your home, paying its printed cost of one or two; **Fortify** a connected non-home tile for one energy, adding one defense up to two; **Raid** an adjacent enemy non-home tile for two energy plus its fortification, requiring more connected friendly neighbors than defending neighbors plus fortification; or **Rest** for two extra energy. Disconnected territory still scores but cannot act. Owned land scores its printed value, shrines add two points, and the highest score after eight rounds wins; tied players share victory.
+
+## Implementation
+
+`engine.mjs` is deterministic and immutable. `api.mjs` stores private game envelopes in D1 using compare-and-swap. Games expire after seven days; capacity and request sizes are bounded.
 
 `worker/index.js` serves the frontend and API. The build bundles source into a dependency-free Worker module for Sites. Browsers and agents use the same API.
 
