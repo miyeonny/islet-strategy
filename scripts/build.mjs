@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const engine=read('engine.mjs'),api=read('api.mjs'),front=read('frontend.mjs');
+const assets='export const API_DOC='+JSON.stringify(read('docs/API.md'))+';\nexport const BOT_SOURCE='+JSON.stringify(read('examples/bot.py'))+';\nexport const ENGINE_SOURCE='+JSON.stringify(engine)+';\nexport const ART_B64='+JSON.stringify(fs.readFileSync(new URL('../assets/islands.png',import.meta.url)).toString('base64'))+';\n';
+fs.writeFileSync(new URL('../assets.mjs',import.meta.url),assets);
+const engineExports=[...engine.matchAll(/export (?:function|const) (\w+)/g)].map(m=>m[1]);
+const apiCode=api.replace(/^import .*?;\s*$/gm,'').replace(/^export /gm,'');
+const source='const engine=(()=>{'+engine.replace(/^export /gm,'')+';return {'+engineExports.join(',')+'};})();\nconst {'+engineExports.join(',')+'}=engine;\n'+assets.replace(/^export /gm,'')+'\nconst {fetchAPI}=(()=>{'+apiCode+';return {fetchAPI};})();\n'+front.replace(/^export /gm,'')+'\n'+read('worker/index.js').replace(/^import .*?;\s*$/gm,'');
+fs.mkdirSync('dist/server',{recursive:true});fs.mkdirSync('dist/.openai',{recursive:true});fs.writeFileSync('dist/server/index.js',source);fs.copyFileSync('.openai/hosting.json','dist/.openai/hosting.json');
+if(fs.existsSync('drizzle'))fs.cpSync('drizzle','dist/.openai/drizzle',{recursive:true});
+console.log('Built Islet Worker ('+Buffer.byteLength(source)+' bytes), engine exports '+engineExports.join(', '));
