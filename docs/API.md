@@ -2,6 +2,10 @@
 
 All routes use JSON; POST bodies are limited to 16 KiB. There is no account, wallet, arbitrary code execution or external fetch route.
 
+Try the same-origin browser agent at `/agent-demo`; its source is `/bot.mjs` (repository: `examples/bot.mjs`). Import `runBot` and call `await runBot({base: location.origin})` to create and play a two-player game. Pass `code` to claim an open human seat, or `code`, `playerId` and `token` to drive a seat you own. `onUpdate(event)` receives public state and actions. The deterministic sample uses standard browser fetch, stops after at most 50 requests, and limits each request to ten seconds.
+
+The public browser workflow is verified. Python's standard-library client was rejected by the public host with HTTP 403 / Cloudflare 1010 in this environment; it reports that response and stops. Other external clients' compatibility is unverified. The local Python example is verified against `preview.mjs`.
+
 `POST /api/games` accepts `{ "name": "Ada", "players": 2, "bots": 1 }`. Defaults: two players and one bot. Bots occupy the last seats. Zero bots creates an invite game; bots equal to players runs a complete bot match. HTTP 201 returns the standard response plus `hostToken`, `seats`/`credentials` (issued human credentials), and host `playerId`/`token` when there is a human host. Only the host seat token is issued at creation. Keep tokens private.
 
 `GET /api/games/ABC234` returns `{code, version, state, legalMoves, waitingForPlayers, seatStatus, expiresAt}`. `state` contains all public board tiles, players, energy, scores, log and winners. `seatStatus` contains `{playerId,name,bot,claimed}` without tokens. The top-level `version` is the storage revision for concurrency; `state.version` counts engine turns and may differ. While waiting for humans, top-level `legalMoves` is empty and moves cannot be submitted.

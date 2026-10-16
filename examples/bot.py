@@ -17,10 +17,14 @@ def call(base, path, payload=None):
         with urllib.request.urlopen(request, timeout=15) as response:
             return json.load(response)
     except urllib.error.HTTPError as error:
-        detail = json.load(error)
+        text = error.read(4096).decode('utf-8', errors='replace')
         if error.code == 409:
             return None  # Poll fresh state; never replay a stale action blindly.
-        raise RuntimeError(detail.get('error', {}).get('message', str(error))) from error
+        try:
+            message = json.loads(text).get('error', {}).get('message', text)
+        except (ValueError, AttributeError):
+            message = ' '.join(text.split())[:500] or str(error.reason)
+        raise RuntimeError(f'HTTP {error.code}: {message}') from error
 
 
 def choose(game):
@@ -65,4 +69,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except RuntimeError as error:
+        raise SystemExit(str(error)) from None

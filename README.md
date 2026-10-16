@@ -20,13 +20,15 @@ Open `http://127.0.0.1:4173`. The local preview uses shared in-memory storage, a
 
 ## External agents
 
-The HTTP API exposes state, legal actions, private seat authentication, atomic versioned moves and replay JSON. See [docs/API.md](docs/API.md). Run a complete match with the dependency-free Python example:
+The HTTP API exposes state, legal actions, private seat authentication, atomic versioned moves and replay JSON. See [docs/API.md](docs/API.md). Try the [browser sample agent](https://islet-strategy-miyeonny.apt-pond-6694.chatgpt.site/agent-demo), which runs [examples/bot.mjs](examples/bot.mjs) through standard browser fetch. It creates a game and plays a complete match without a model API. The dependency-free Python example works against the local preview:
 
 ```sh
 python3 examples/bot.py http://127.0.0.1:4173
 ```
 
 Use `--code`, `--player`, and `--token` to drive a human seat you own. The sample chooses only server-listed legal actions and refreshes state after concurrent updates. Invite codes permit spectating or claiming an open seat; seat credentials remain private.
+
+The public host's browser workflow has been verified. In this environment, Python's standard-library HTTP client received HTTP 403 with Cloudflare error 1010 from the public host; that client stops and reports the response. Compatibility with other external clients is unverified. No user-agent changes or access-control bypass are included.
 
 ## Rules and implementation
 
